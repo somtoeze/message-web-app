@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DevOps Message Board</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 50px auto; text-align: center; }
+        input, button { padding: 10px; margin: 5px; }
+        #messages { list-style: none; padding: 0; margin-top: 20px; text-align: left; }
+        #messages li { background: #f0f0f0; margin: 5px; padding: 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>✍️ DevOps Message Board</h1>
+    <input type="text" id="messageInput" placeholder="Enter your message...">
+    <button onclick="sendMessage()">Post Message</button>
+    <ul id="messages"></ul>
+
+    <script>
+        async function loadMessages() {
+            const response = await fetch('/messages');
+            const messages = await response.json();
+            const list = document.getElementById('messages');
+            list.innerHTML = '';
+            messages.forEach(msg => {
+                const item = document.createElement('li');
+                item.textContent = msg.message;
+                list.appendChild(item);
+            });
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value;
+            if (!message) return;
+            await fetch('/message', { method: 'POST', body: new URLSearchParams({ message }) });
+            input.value = '';
+            loadMessages();
+        }
+
+        loadMessages();
+        setInterval(loadMessages, 5000);
+    </script>
+</body>
+</html>

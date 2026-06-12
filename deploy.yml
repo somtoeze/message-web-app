@@ -1,0 +1,32 @@
+name: Build and Deploy to AWS EC2
+
+on:
+  push:
+    branches: ["main"]
+
+env:
+  DOCKER_IMAGE: flask-message-app:latest
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE }} .
+
+      - name: Deploy to AWS EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/message-web-app
+            git pull origin main
+            docker compose down || true
+            docker compose up -d --build
+            docker image prune -f
